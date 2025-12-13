@@ -1,0 +1,76 @@
+---
+title: "Neuropsychological Test Battery"
+date: 12/12/2025
+date-format: long
+format:
+  typst:
+    papersize: a4
+    margin:
+      x: 1.5cm
+      y: 1.5cm
+    columns: 1
+    fontsize: 10pt
+params:
+  patient_name: ""
+  age: ""
+  battery_type: ""
+  referral: ""
+  selected_tests: null
+---
+
+## Patient Information
+
+**Name:** `r params$patient_name`  \
+**Age:** `r params$age`  \
+**Battery Type:** `r params$battery_type`  \
+
+**Referral Question:**
+`r params$referral`
+
+---
+
+## Selected Tests
+
+```{r}
+#| echo: false
+
+library(dplyr)
+library(knitr)
+library(tibble)
+
+tests <- params$selected_tests
+tests <- tryCatch(as_tibble(tests), error = function(e) tibble())
+
+if (nrow(tests) == 0) {
+  cat("No tests selected.")
+} else {
+  tests |>
+    arrange(desc(required), domain, test_name) |>
+    transmute(
+      Test = test_name,
+      Domain = domain,
+      Format = admin_format,
+      Required = ifelse(required, "Yes", "No"),
+      Notes = notes
+    ) |>
+    kable()
+}
+```
+
+---
+
+## Summary
+
+```{r}
+#| echo: false
+#| results: asis
+
+if (!is.null(tests) && nrow(tests) > 0) {
+  n_req <- sum(tests$required)
+  n_opt <- sum(!tests$required)
+  cat(sprintf("- Total tests: %d\n", nrow(tests)))
+  cat(sprintf("- Required: %d\n", n_req))
+  cat(sprintf("- Optional: %d\n", n_opt))
+  cat(sprintf("\n- Domains: %s\n", paste(unique(tests$domain), collapse = ", ")))
+}
+```
