@@ -1,10 +1,10 @@
 ---
 title: "Neuropsychological Test Battery"
-date: 12/12/2025
+date: today
 date-format: long
 format:
   typst:
-    papersize: a4
+    papersize: "us-letter"
     margin:
       x: 1.5cm
       y: 1.5cm
@@ -16,6 +16,10 @@ params:
   battery_type: ""
   referral: ""
   selected_tests: null
+execute:
+  echo: false
+  warning: false
+  messages: false
 ---
 
 ## Patient Information
@@ -44,8 +48,9 @@ tests <- tryCatch(as_tibble(tests), error = function(e) tibble())
 if (nrow(tests) == 0) {
   cat("No tests selected.")
 } else {
+  # Keep original order (already sorted by required desc, order_in_battery)
+  # Don't re-sort - order is already correct from app
   tests |>
-    arrange(desc(required), domain, test_name) |>
     transmute(
       Test = test_name,
       Domain = domain,

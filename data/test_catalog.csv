@@ -1,4 +1,4 @@
-﻿"test_id","test_name","domain","admin_format","age_range","notes"
+"test_id","test_name","domain","admin_format","age_range","notes"
 "rbans","RBANS","Cognitive Screening","QI","12-89","Repeatable Battery for Assessment of Neuropsychological Status"
 "moca","MoCA","Cognitive Screening","Paper","18+","Montreal Cognitive Assessment"
 "clock","Clock Drawing","Cognitive Screening","PPT","All","Clock drawing test"

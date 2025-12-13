@@ -2,10 +2,27 @@
 # Data loading + validation helpers
 # =============================================================================
 
+#' Clean column names (remove BOM and trim whitespace)
+clean_names <- function(df) {
+  names(df) <- gsub("^\uFEFF", "", names(df))  # Remove BOM
+  names(df) <- trimws(names(df))
+  df
+}
+
+#' Clean string values (remove invisible characters, trim whitespace)
+clean_string <- function(x) {
+  x <- as.character(x)
+  x <- gsub("^\uFEFF", "", x)      # Remove BOM
+  x <- gsub("[\r\n\t]", "", x)     # Remove newlines/tabs
+  x <- trimws(x)                    # Trim whitespace
+  x
+}
+
 load_test_catalog <- function(path = "data/test_catalog.csv") {
   if (!file.exists(path)) stop("Test catalog not found: ", path)
 
   df <- readr::read_csv(path, show_col_types = FALSE, progress = FALSE)
+  df <- clean_names(df)
 
   required_cols <- c("test_id", "test_name", "domain", "admin_format", "age_range", "notes")
   missing_cols <- setdiff(required_cols, names(df))
@@ -16,8 +33,8 @@ load_test_catalog <- function(path = "data/test_catalog.csv") {
   df <- df |>
     dplyr::mutate(
       dplyr::across(dplyr::all_of(required_cols), ~ dplyr::if_else(is.na(.x), "", as.character(.x))),
-      test_id = stringr::str_trim(test_id),
-      test_name = stringr::str_trim(test_name)
+      test_id = clean_string(test_id),
+      test_name = clean_string(test_name)
     ) |>
     dplyr::filter(test_id != "") |>
     dplyr::distinct(test_id, .keep_all = TRUE)
@@ -34,6 +51,7 @@ load_battery_catalog <- function(path = "data/battery_catalog.csv") {
   if (!file.exists(path)) stop("Battery catalog not found: ", path)
 
   df <- readr::read_csv(path, show_col_types = FALSE, progress = FALSE)
+  df <- clean_names(df)
 
   required_cols <- c("battery_name", "description", "age_group")
   missing_cols <- setdiff(required_cols, names(df))
@@ -44,7 +62,7 @@ load_battery_catalog <- function(path = "data/battery_catalog.csv") {
   df |>
     dplyr::mutate(
       dplyr::across(dplyr::all_of(required_cols), ~ dplyr::if_else(is.na(.x), "", as.character(.x))),
-      battery_name = stringr::str_trim(battery_name)
+      battery_name = clean_string(battery_name)
     ) |>
     dplyr::filter(battery_name != "") |>
     dplyr::distinct(battery_name, .keep_all = TRUE)
@@ -54,6 +72,7 @@ load_battery_tests <- function(path = "data/battery_tests.csv") {
   if (!file.exists(path)) stop("Battery test map not found: ", path)
 
   df <- readr::read_csv(path, show_col_types = FALSE, progress = FALSE)
+  df <- clean_names(df)
 
   required_cols <- c("battery_name", "test_id", "required")
   missing_cols <- setdiff(required_cols, names(df))
@@ -63,8 +82,8 @@ load_battery_tests <- function(path = "data/battery_tests.csv") {
 
   df |>
     dplyr::mutate(
-      battery_name = stringr::str_trim(as.character(battery_name)),
-      test_id = stringr::str_trim(as.character(test_id)),
+      battery_name = clean_string(battery_name),
+      test_id = clean_string(test_id),
       required = as.logical(required)
     ) |>
     dplyr::filter(battery_name != "", test_id != "")

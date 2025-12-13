@@ -70,9 +70,19 @@ testSelectionUI <- function(id, battery_choices) {
 testSelectionServer <- function(id, test_catalog, battery_definitions) {
   shiny::moduleServer(id, function(input, output, session) {
 
+    # Debug: Print catalog info on load
+    message("Test catalog has ", nrow(test_catalog), " tests")
+    message("First 5 test_ids: ", paste(head(test_catalog$test_id, 5), collapse = ", "))
+    message("Battery definitions: ", paste(names(battery_definitions), collapse = ", "))
+
     battery_tests <- shiny::reactive({
       shiny::req(input$template_battery)
-      get_battery_tests(input$template_battery, test_catalog, battery_definitions)
+      result <- get_battery_tests(input$template_battery, test_catalog, battery_definitions)
+      message("Battery '", input$template_battery, "' has ", nrow(result), " tests loaded")
+      if (nrow(result) > 0) {
+        message("  First 3 test_names: ", paste(head(result$test_name, 3), collapse = ", "))
+      }
+      result
     })
 
     battery_info <- shiny::reactive({
@@ -83,6 +93,10 @@ testSelectionServer <- function(id, test_catalog, battery_definitions) {
     output$battery_info <- shiny::renderUI({
       info <- battery_info()
       if (is.null(info)) return(NULL)
+
+      # Debug output
+      message("Battery info - Required IDs: ", paste(info$required, collapse = ", "))
+      message("Battery info - Optional IDs: ", paste(info$optional, collapse = ", "))
 
       shiny::tagList(
         shiny::tags$p(shiny::tags$strong("Description: "), info$description),
@@ -97,6 +111,7 @@ testSelectionServer <- function(id, test_catalog, battery_definitions) {
       tests <- battery_tests()
 
       if (nrow(tests) == 0) {
+        message("No tests found for battery!")
         shiny::updateCheckboxGroupInput(session, "required_tests",
           choices = character(0), selected = character(0)
         )
@@ -111,11 +126,19 @@ testSelectionServer <- function(id, test_catalog, battery_definitions) {
 
       # Required
       req_tests <- tests |> dplyr::filter(required)
+      message("Required tests: ", nrow(req_tests))
+      
       if (nrow(req_tests) > 0) {
-        req_choices <- safe_set_names(
-          req_tests$test_id,
-          format_test_label(req_tests$test_name, TRUE)
-        )
+        # Debug: check for NA values
+        na_names <- sum(is.na(req_tests$test_name) | req_tests$test_name == "")
+        if (na_names > 0) {
+          message("WARNING: ", na_names, " required tests have NA/empty test_name!")
+        }
+        
+        labels <- format_test_label(req_tests$test_name, TRUE)
+        message("Required labels: ", paste(head(labels, 3), collapse = ", "))
+        
+        req_choices <- safe_set_names(req_tests$test_id, labels)
         req_selected <- req_tests$test_id
       } else {
         req_choices <- character(0)
@@ -124,20 +147,26 @@ testSelectionServer <- function(id, test_catalog, battery_definitions) {
 
       # Optional
       opt_tests <- tests |> dplyr::filter(!required)
+      message("Optional tests: ", nrow(opt_tests))
+      
       if (nrow(opt_tests) > 0) {
-        opt_choices <- safe_set_names(
-          opt_tests$test_id,
-          format_test_label(opt_tests$test_name, FALSE)
-        )
+        # Debug: check for NA values
+        na_names <- sum(is.na(opt_tests$test_name) | opt_tests$test_name == "")
+        if (na_names > 0) {
+          message("WARNING: ", na_names, " optional tests have NA/empty test_name!")
+        }
+        
+        labels <- format_test_label(opt_tests$test_name, FALSE)
+        message("Optional labels: ", paste(head(labels, 3), collapse = ", "))
+        
+        opt_choices <- safe_set_names(opt_tests$test_id, labels)
       } else {
         opt_choices <- character(0)
       }
 
       # All
-      all_choices <- safe_set_names(
-        tests$test_id,
-        format_test_label(tests$test_name, tests$required)
-      )
+      all_labels <- format_test_label(tests$test_name, tests$required)
+      all_choices <- safe_set_names(tests$test_id, all_labels)
 
       shiny::updateCheckboxGroupInput(session, "required_tests",
         choices = req_choices,
