@@ -27,9 +27,7 @@ execute:
 **Name:** `r params$patient_name`  \
 **Age:** `r params$age`  \
 **Battery Type:** `r params$battery_type`  \
-
-**Referral Question:**
-`r params$referral`
+**Referral Question:** `r params$referral` \
 
 ---
 

@@ -239,8 +239,8 @@ message("Loaded ", nrow(test_catalog), " tests, ", nrow(battery_catalog), " batt
 # =============================================================================
 
 ui <- dashboardPage(
-  dashboardHeader(title = "Neuropsych Test Battery Builder"),
-  
+  dashboardHeader(title = "Neuropsych Test\nBattery Builder"),
+
   dashboardSidebar(
     sidebarMenu(
       id = "tabs",
@@ -251,98 +251,178 @@ ui <- dashboardPage(
     hr(),
     div(style = "padding: 10px;", tags$small("v4.3 - With PDF export"))
   ),
-  
+
   dashboardBody(
-    tags$head(tags$style(HTML("
+    tags$head(tags$style(HTML(
+      "
       .content-wrapper { background-color: #f4f4f4; }
       .box { border-radius: 5px; }
       .checkbox label { font-weight: normal; }
-    "))),
-    
+    "
+    ))),
+
     tabItems(
       # Patient Info Tab
       tabItem(
         tabName = "patient",
         fluidRow(
           box(
-            title = "Patient Information", width = 6, status = "primary", solidHeader = TRUE,
+            title = "Patient Information",
+            width = 6,
+            status = "primary",
+            solidHeader = TRUE,
             textInput("patient_name", "Patient Name"),
             textInput("age", "Age"),
-            selectInput("battery_type", "Default Battery Type",
-                        choices = battery_choices, selected = battery_choices[[1]]),
-            textAreaInput("referral", "Referral Question / Case Description",
-                          rows = 4, placeholder = "Enter referral question...")
+            selectInput(
+              "battery_type",
+              "Default Battery Type",
+              choices = battery_choices,
+              selected = battery_choices[[1]]
+            ),
+            textAreaInput(
+              "referral",
+              "Referral Question / Case Description",
+              rows = 4,
+              placeholder = "Enter referral question..."
+            )
           ),
           box(
-            title = "Instructions", width = 6, status = "info", solidHeader = TRUE,
+            title = "Instructions",
+            width = 6,
+            status = "info",
+            solidHeader = TRUE,
             tags$ol(
               tags$li("Enter basic patient information on this page."),
-              tags$li("Select a battery template and customize tests on the next page."),
+              tags$li(
+                "Select a battery template and customize tests on the next page."
+              ),
               tags$li("Review selected tests and download PDF or CSV.")
             )
           )
         )
       ),
-      
+
       # Test Selection Tab
       tabItem(
         tabName = "tests",
         fluidRow(
           box(
-            title = "Battery Template", width = 4, status = "primary", solidHeader = TRUE,
-            selectInput("template_battery", "Select a battery template:",
-                        choices = battery_choices, selected = battery_choices[[1]]),
+            title = "Battery Template",
+            width = 4,
+            status = "primary",
+            solidHeader = TRUE,
+            selectInput(
+              "template_battery",
+              "Select a battery template:",
+              choices = battery_choices,
+              selected = battery_choices[[1]]
+            ),
             uiOutput("battery_info"),
             hr(),
-            actionButton("select_required", "Select Required Only",
-                         class = "btn-info", width = "100%"),
-            br(), br(),
-            actionButton("select_all", "Select All Tests",
-                         class = "btn-success", width = "100%"),
-            br(), br(),
-            actionButton("clear_all", "Clear All",
-                         class = "btn-warning", width = "100%")
+            actionButton(
+              "select_required",
+              "Select Required Only",
+              class = "btn-info",
+              width = "100%"
+            ),
+            br(),
+            br(),
+            actionButton(
+              "select_all",
+              "Select All Tests",
+              class = "btn-success",
+              width = "100%"
+            ),
+            br(),
+            br(),
+            actionButton(
+              "clear_all",
+              "Clear All",
+              class = "btn-warning",
+              width = "100%"
+            )
           ),
           box(
-            title = "Available Tests", width = 8, status = "info", solidHeader = TRUE,
-            helpText("\u2605 = Required test in this battery. Check/uncheck to customize."),
+            title = "Available Tests",
+            width = 8,
+            status = "info",
+            solidHeader = TRUE,
+            helpText(
+              "\u2605 = Required test in this battery. Check/uncheck to customize."
+            ),
             tabsetPanel(
               id = "test_tabs",
-              tabPanel("Required",
-                       div(style = "max-height: 400px; overflow-y: auto;",
-                           checkboxGroupInput("required_tests", NULL, choices = character(0)))),
-              tabPanel("Optional",
-                       div(style = "max-height: 400px; overflow-y: auto;",
-                           checkboxGroupInput("optional_tests", NULL, choices = character(0)))),
-              tabPanel("All Tests",
-                       div(style = "max-height: 400px; overflow-y: auto;",
-                           checkboxGroupInput("all_tests", NULL, choices = character(0))))
+              tabPanel(
+                "Required",
+                div(
+                  style = "max-height: 400px; overflow-y: auto;",
+                  checkboxGroupInput(
+                    "required_tests",
+                    NULL,
+                    choices = character(0)
+                  )
+                )
+              ),
+              tabPanel(
+                "Optional",
+                div(
+                  style = "max-height: 400px; overflow-y: auto;",
+                  checkboxGroupInput(
+                    "optional_tests",
+                    NULL,
+                    choices = character(0)
+                  )
+                )
+              ),
+              tabPanel(
+                "All Tests",
+                div(
+                  style = "max-height: 400px; overflow-y: auto;",
+                  checkboxGroupInput("all_tests", NULL, choices = character(0))
+                )
+              )
             )
           )
         )
       ),
-      
+
       # Review Tab
       tabItem(
         tabName = "review",
         fluidRow(
           box(
-            title = "Selected Tests Summary", width = 8, status = "primary", solidHeader = TRUE,
+            title = "Selected Tests Summary",
+            width = 8,
+            status = "primary",
+            solidHeader = TRUE,
             tableOutput("summary_table"),
             br(),
             verbatimTextOutput("summary_stats")
           ),
           box(
-            title = "Download Options", width = 4, status = "success", solidHeader = TRUE,
+            title = "Download Options",
+            width = 4,
+            status = "success",
+            solidHeader = TRUE,
             h4("Download Test Sheet"),
             helpText("Generate a formatted PDF of the selected test battery."),
             helpText(tags$em("Note: Requires Quarto + Typst installed.")),
             br(),
-            downloadButton("download_pdf", "Download PDF", class = "btn-success btn-lg", style = "width: 100%;"),
+            downloadButton(
+              "download_pdf",
+              "Download PDF",
+              class = "btn-success btn-lg",
+              style = "width: 100%;"
+            ),
             hr(),
             h4("Export Test List"),
             helpText("Download raw test list as CSV."),
-            downloadButton("download_csv", "Download CSV", class = "btn-info", style = "width: 100%;")
+            downloadButton(
+              "download_csv",
+              "Download CSV",
+              class = "btn-info",
+              style = "width: 100%;"
+            )
           )
         )
       )
