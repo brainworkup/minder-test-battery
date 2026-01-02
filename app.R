@@ -239,7 +239,7 @@ message("Loaded ", nrow(test_catalog), " tests, ", nrow(battery_catalog), " batt
 # =============================================================================
 
 ui <- dashboardPage(
-  dashboardHeader(title = "Neuropsych Test\nBattery Builder"),
+  dashboardHeader(title = "Neuropsych Battery Builder"),
 
   dashboardSidebar(
     sidebarMenu(
